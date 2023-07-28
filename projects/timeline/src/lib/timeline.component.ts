@@ -64,11 +64,11 @@ export interface VideoCellType {
 
 
 @Component({
-    selector: 'ngx-video-timeline',
+    selector: 'ngx-videoline',
     templateUrl: './timeline.component.html',
     styleUrls: ['./timeline.component.scss']
 })
-export class NgxVideoTimelineComponent implements OnInit, OnChanges {
+export class NgxVideolineComponent implements OnInit, OnChanges {
 
 
     // The height of the outer canvas
@@ -113,7 +113,7 @@ export class NgxVideoTimelineComponent implements OnInit, OnChanges {
     // relation to Css End
 
     // Video clips
-    @Input() videoCells: Array<VideoCellType>;
+    @Input() videoCells: VideoCellType[];
 
     // flag of click play button
     @Input() isPlayClick: boolean;
@@ -148,7 +148,7 @@ export class NgxVideoTimelineComponent implements OnInit, OnChanges {
     canvasH: number;
 
     // video clips in reality
-    timecell: Array<VideoCellType>;
+    timecell: VideoCellType[];
 
     // per minute stand for step
     minutesPerStep: Array<number>;
@@ -246,7 +246,7 @@ export class NgxVideoTimelineComponent implements OnInit, OnChanges {
         this.bottomLineColor = 'rgba(0,0,0,1)';
         this.borderColor = '#fff';
         this.bgColor = '#fff';
-        this.playBarColor = '#448aff';
+        this.playBarColor = '#3daae2';
     }
 
     /**
@@ -256,7 +256,7 @@ export class NgxVideoTimelineComponent implements OnInit, OnChanges {
     onResize(): void {
         this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
         this.canvasW = this.canvas.parentNode.offsetWidth;
-        this.init(this.startTimestamp, this.timecell, false);
+        this.init(0, this.timecell, false);
     }
 
     /**
@@ -515,7 +515,7 @@ export class NgxVideoTimelineComponent implements OnInit, OnChanges {
      * @param  timecell Video segment array
      * @param  redrawFlag Whether to redraw the mark
      */
-    init(startTimestamp: number, timecell: any, redrawFlag: boolean): void {
+    init(startTimestamp: number, timecell: VideoCellType[], redrawFlag: boolean): void {
         this.timecell = timecell;
         this.startTimestamp = startTimestamp;
         if (
@@ -973,7 +973,7 @@ export class NgxVideoTimelineComponent implements OnInit, OnChanges {
      * Change video segment
      */
     changeVideo(): void {
-        const cells: Array<VideoCellType> = [
+        const cells: VideoCellType[] = [
             {
                 beginTime: new Date().getTime() - 1 * 1000 * 3600,
                 endTime: new Date().getTime() + 2 * 1000 * 3600,

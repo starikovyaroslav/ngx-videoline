@@ -1,5 +1,5 @@
 {
-  "name": "ngx-video-timeline",
+  "name": "ngx-videoline",
   "version": "0.1.16",
   "peerDependencies": {
     "@angular/common": "^16.0.1",
@@ -15,13 +15,13 @@
     "video"
   ],
   "author": {
-    "name": "lenon",
-    "email": "lenonrade@gmail.com",
-    "url": "https://github.com/lenonMax"
+    "name": "Starikov Yaroslav",
+    "email": "slava.com.com@gmail.com",
+    "url": "https://github.com/starikovyaroslav"
   },
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/lenonMax/ngx-video-timeline"
+    "url": "https://github.com/starikovyaroslav/ngx-videoline"
   },
-  "homepage": "https://github.com/lenonMax/ngx-video-timeline"
+  "homepage": "https://github.com/starikovyaroslav/ngx-videoline"
 }

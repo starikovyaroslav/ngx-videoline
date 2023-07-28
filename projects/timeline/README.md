@@ -8,7 +8,7 @@
 
 #### Compatibility
 
-| Angular | Latest ngx-video-timeline compatible |
+| Angular | Latest ngx-videoline compatible |
 | ------- | ---------------------------- |
 | 16      | 0.10.16                        |
 | 15      | 0.10.15                        |
@@ -21,11 +21,11 @@
 
 ## Getting Started
 ```
-npm i ngx-video-timeline --save
+npm i ngx-videoline --save
 ```
 or
 ```
-yarn add ngx-video-timeline
+yarn add ngx-videoline
 ```
 ## Usage
 Import the module into your module
@@ -52,7 +52,7 @@ export class AppModule { }
 ```
 then use it in html
 ```
-<ngx-video-timeline 
+<ngx-videoline
     class="canvas"
     [speed]="speed" 
     [playTime]="playTime" 
@@ -63,7 +63,7 @@ then use it in html
     [canvasHeight]="canvasHeight" 
     (playClick)="onPlayClick($event)"
 >
-</ngx-video-timeline>
+</ngx-videoline>
 ```
 in ts file
 ```
@@ -76,7 +76,7 @@ import { VideoCellType } from 'projects/timeline/src/lib/timeline.component';
     styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-    title = 'ngx-video-timeline';
+    title = 'ngx-videoline';
 
     speed: number;
     canvasHeight: number;

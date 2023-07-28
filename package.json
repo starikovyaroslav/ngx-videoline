@@ -1,15 +1,17 @@
 {
-  "name": "ngx-video-timeline",
+  "name": "ngx-videoline",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 4202",
+    "start": "npm run build_lib && ng serve",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "bundle-report": "webpack-bundle-analyzer dist/ngx-video-timeline/stats-es2015.json",
-    "build:github": "ng build --configuration production --output-path docs --base-href /ngx-video-timeline/"
+    "build:github": "ng build --configuration production --output-path docs --base-href /ngx-video-timeline/",
+    "build_lib": "ng build timeline",
+    "pack_lib": "cd dist/timeline && npm pack"
   },
   "private": true,
   "dependencies": {

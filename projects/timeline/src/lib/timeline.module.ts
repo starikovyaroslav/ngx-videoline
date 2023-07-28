@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
-import { NgxVideoTimelineComponent } from './timeline.component';
+import { NgxVideolineComponent } from './timeline.component';
 import { CommonModule } from '@angular/common';
 
 
 
 @NgModule({
-    declarations: [NgxVideoTimelineComponent],
+    declarations: [NgxVideolineComponent],
     imports: [
       CommonModule
     ],
-    exports: [NgxVideoTimelineComponent]
+    exports: [NgxVideolineComponent]
 })
-export class NgxVideoTimelineModule { }
+export class NgxVideolineModule { }

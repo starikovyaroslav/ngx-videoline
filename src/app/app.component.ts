@@ -14,17 +14,18 @@ export class AppComponent implements OnInit {
     startTimeThreshold: number | string | Date;
     endTimeThreshold: number | string | Date;
     videoCells: VideoCellType[];
-    playTime: Date;
+    playTime: number;
     isPlayClick: boolean;
 
     constructor() {
         this.speed = 1;
         this.isPlayClick = false;
-        this.canvasHeight = 80;
+        this.canvasHeight = 50;
         this.startTimeThreshold = new Date();
         this.endTimeThreshold = new Date(new Date().getTime() + (3 * 3600 * 1000));
         this.videoCells = [];
-        this.playTime = new Date();
+        // todo не забывать убрать мок
+        this.playTime = 1690520400000;
     }
 
     onPlay(): void {
@@ -49,14 +50,22 @@ export class AppComponent implements OnInit {
         this.playTime = date.value;
     }
 
+    // todo надо подставить реальные значения
     changeVideo(): void {
         this.videoCells = [
             {
-                beginTime: new Date().getTime() - 1 * 3600 * 1000,
-                endTime: new Date().getTime() + 1 * 3600 * 1000,
+                beginTime: 1690520400000,
+                endTime: 1690527720000,
                 style: {
-                    background: '#f3e5e4'
+                    background: '#2d9dff78'
                 }
+            },
+            {
+              beginTime: 1690531200000,
+              endTime: 1690534800000,
+              style: {
+                background: '#2d9dff78'
+              }
             }
         ];
     }
