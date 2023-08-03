@@ -1,9 +1,9 @@
 {
   "name": "ngx-videoline",
-  "version": "0.1.16",
+  "version": "0.10.14",
   "peerDependencies": {
-    "@angular/common": "^16.0.1",
-    "@angular/core": "^16.0.1"
+    "@angular/common": "^14.3.0",
+    "@angular/core": "^14.3.0"
   },
   "dependencies": {
     "tslib": "^2.0.0"
