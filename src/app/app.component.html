@@ -1,23 +1,17 @@
+<div class="canvas-box" fxLayout="row" fxLayoutAlign="start center">
+  <ngx-videoline [canvasHeight]="canvasHeight"
+                 [isPlayClick]="isPlayClick"
+                 [playTime]="playTime"
+                 [speed]="speed"
+                 [startTimeThreshold]="videoCells[0].beginTime"
+                 [endTimeThreshold]="videoCells[videoCells.length - 1].endTime"
+                 [videoCells]="videoCells"
+                 class="canvas-class"></ngx-videoline>
+</div>
 
-            <div fxLayout="row" fxLayoutAlign="start center"  class="canvas-box">
-              <ngx-videoline (playClick)="onPlayClick($event)"
-                             [canvasHeight]="canvasHeight"
-                             [isPlayClick]="isPlayClick"
-                             [playTime]="playTime"
-                             [speed]="speed"
-                             [videoCells]="videoCells"
-                             class="canvas-class"></ngx-videoline>
-            </div>
-          <div fxLayout="row" fxLayoutAlign="start center">
-              <div>
-                  <button mat-button (click)="onPlay()">play</button>
-                  <button mat-button (click)="onPause()">pause</button>
-                  <button mat-button (click)="changeVideo()">changeVideos</button>
-                  <!-- <mat-form-field>
-                      <input matInput [matDatepicker]="picker" placeholder="选择时间" (dateChange)="selectedTime($event)">
-                      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                      <mat-datepicker #picker></mat-datepicker>
-                  </mat-form-field> -->
-              </div>
-
-          </div>
+<div fxLayout="row" fxLayoutAlign="start center">
+  <div>
+    <button (click)="onPlay()" mat-button>play</button>
+    <button (click)="onPause()" mat-button>pause</button>
+  </div>
+</div>

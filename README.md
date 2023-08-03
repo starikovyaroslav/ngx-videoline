@@ -1,5 +1,4 @@
-# NgxVideoTimeline
-## [Demo](https://lenonmax.github.io/ngx-video-timeline/)
+# NgxVideoline
 ## example
 
 ![samplePic](src/assets/timeline.png)
@@ -8,16 +7,16 @@
 
 #### Compatibility
 
-| Angular | Latest ngx-video-timeline compatible |
-| ------- | ---------------------------- |
-| 16      | 0.10.16                        |
-| 15      | 0.10.15                        |
-| 14      | 0.10.14                        |
-| 13      | 0.10.13                        |
-| 12      | 0.10.12                        |
-| 11      | 0.10.11                        |
-| 10      | 0.10.10                        |
-| 9      | 0.10.9                        |
+| Angular | Latest ngx-videoline compatible |
+| ------- |---------------------------------|
+| 16      | 0.10.16                         |
+| 15      | 0.10.15                         |
+| 14      | 0.10.14                         |
+| 13      | 0.10.13                         |
+| 12      | 0.10.12                         |
+| 11      | 0.10.11                         |
+| 10      | 0.10.10                         |
+| 9      | 0.10.9                          |
 
 ## Getting Started
 ```
@@ -34,7 +33,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { NgxVideoTimelineModule } from 'projects/timeline/src/lib/timeline.module';
+import { NgxVideoline } from 'projects/timeline/src/lib/timeline.module';
 
 @NgModule({
     declarations: [
@@ -42,7 +41,7 @@ import { NgxVideoTimelineModule } from 'projects/timeline/src/lib/timeline.modul
     ],
     imports: [
         BrowserModule,
-        NgxVideoTimelineModule
+        NgxVideoline
     ],
     providers: [],
     bootstrap: [AppComponent]
@@ -116,18 +115,6 @@ export class AppComponent implements OnInit {
 
     selectedTime(date: any): void {
         this.playTime = date.value;
-    }
-
-    changeVideo(): void {
-        this.videoCells = [
-            {
-                beginTime: new Date().getTime() - 1 * 3600 * 1000,
-                endTime: new Date().getTime() + 1 * 3600 * 1000,
-                style: {
-                    background: '#f3e5e4'
-                }
-            }
-        ];
     }
 
     ngOnInit(): void {
