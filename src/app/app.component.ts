@@ -7,7 +7,7 @@ import {VideoCellType} from 'ngx-video-timeline';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'ngx-videoline';
+  title = 'ngx-timeliner';
 
   speed: number;
   canvasHeight: number;

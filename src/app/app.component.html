@@ -1,12 +1,12 @@
 <div class="canvas-box" fxLayout="row" fxLayoutAlign="start center">
-  <ngx-videoline [canvasHeight]="canvasHeight"
+  <ngx-timeliner [canvasHeight]="canvasHeight"
                  [isPlayClick]="isPlayClick"
                  [playTime]="playTime"
                  [speed]="speed"
                  [startTimeThreshold]="videoCells[0].beginTime"
                  [endTimeThreshold]="videoCells[videoCells.length - 1].endTime"
                  [videoCells]="videoCells"
-                 class="canvas-class"></ngx-videoline>
+                 class="canvas-class"></ngx-timeliner>
 </div>
 
 <div fxLayout="row" fxLayoutAlign="start center">

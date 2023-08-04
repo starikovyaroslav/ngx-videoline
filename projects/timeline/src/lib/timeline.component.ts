@@ -66,11 +66,11 @@ export interface VideoCellType {
 
 
 @Component({
-  selector: 'ngx-videoline',
+  selector: 'ngx-timeliner',
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss']
 })
-export class NgxVideolineComponent implements OnInit, OnChanges {
+export class NgxTimelinerComponent implements OnInit, OnChanges {
 
 
   // The height of the outer canvas
