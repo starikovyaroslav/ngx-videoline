@@ -256,6 +256,9 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
   onResize(): void {
     this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
     this.canvasW = this.canvas.parentNode.offsetWidth;
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+    this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
+    this.drawPlayBar();
     this.init(this.startTimestamp, this.timecell, false);
   }
 
@@ -747,9 +750,7 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
       this.mouseUp.emit(this.currentTimestamp);
 
     } else {
-
       const time = this.startTimestamp + posX / pxPerMs;
-
       this.drawPlayBar();
       this.init(this.startTimestamp, this.timecell, true);
       this.drawLine(posX, 0, posX, this.scale * 2, '#808080', 1);
