@@ -1,5 +1,5 @@
 {
-  "name": "ngx-videoline",
+  "name": "ngx-timeliner",
   "version": "0.10.12",
   "peerDependencies": {
     "@angular/common": "~12.2.17",

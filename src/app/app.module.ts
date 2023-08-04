@@ -2,7 +2,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 
 import {AppComponent} from './app.component';
-import {NgxVideolineModule} from '../../projects/timeline/src/lib/timeline.module';
+import {NgxTimelinerModule} from '../../projects/timeline/src/lib/timeline.module';
 
 @NgModule({
   declarations: [
@@ -10,7 +10,7 @@ import {NgxVideolineModule} from '../../projects/timeline/src/lib/timeline.modul
   ],
   imports: [
     BrowserModule,
-    NgxVideolineModule,
+    NgxTimelinerModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
