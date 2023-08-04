@@ -256,7 +256,7 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
   onResize(): void {
     this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
     this.canvasW = this.canvas.parentNode.offsetWidth;
-    this.init(0, this.timecell, false);
+    this.init(this.startTimestamp, this.timecell, false);
   }
 
   /**
@@ -336,7 +336,7 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
 
     // The timeline shows the time rounded up according to the time threshold
     this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
-      Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) :
+      Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
       24;
 
     // The leftmost timestamp defaults to 12 hours before the current time
@@ -412,8 +412,8 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
       ];
       // The timeline shows the time rounded up according to the time threshold
       this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
-        Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600)
-        : 24;
+        Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
+        24;
 
       // The leftmost timestamp defaults to 12 hours before the current time
       this.startTimestamp = Number(this.startTimeThreshold);
@@ -450,9 +450,9 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
         this.startTimeThreshold = Number(value);
       }
 
-      this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24
-        ? Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600)
-        : 24;
+      this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
+        Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
+        24;
 
       this.startTimestamp = Number(this.startTimeThreshold);
     }
@@ -465,9 +465,9 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
       } else if (typeof value === 'number') {
         this.endTimeThreshold = Number(value);
       }
-      this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24
-        ? Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600)
-        : 24;
+      this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
+        Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
+        24;
 
     }
     if (changes.playTime) {
@@ -479,6 +479,7 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
       } else if (typeof value === 'number') {
         this.playTime = Number(value);
       }
+      this.set_time_to_middle(new Date(this.playTime).getTime());
     }
     if (changes.speed) {
 
@@ -508,18 +509,14 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
     this.timecell = timecell;
     this.startTimestamp = startTimestamp;
     if (this.currentTimestamp > this.endTimeThreshold) {
-      this.currentTimestamp =
-        Number(this.endTimeThreshold) + (this.hoursPerRuler * this.playBarDistanceLeft * 1000 * 3600);
-      this.playTime =
-        Number(this.endTimeThreshold) + (this.hoursPerRuler * this.playBarDistanceLeft * 1000 * 3600);
+      this.currentTimestamp = Number(this.endTimeThreshold);
+      this.playTime = Number(this.endTimeThreshold);
     } else if (
       this.currentTimestamp <
       this.startTimeThreshold
     ) {
-      this.currentTimestamp =
-        Number(this.startTimestamp) + (this.hoursPerRuler * this.playBarDistanceLeft * 1000 * 3600);
-      this.playTime =
-        Number(this.startTimestamp) + (this.hoursPerRuler * this.playBarDistanceLeft * 1000 * 3600);
+      this.currentTimestamp = Number(this.startTimestamp);
+      this.playTime = Number(this.startTimestamp);
     }
     this.drawCellBg();
     this.add_graduations(startTimestamp);
@@ -800,7 +797,6 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
   checkAllowedTime(time: number): void {
     const allowedTime = !!this.timecell.find(cell => (time <= cell.endTime && time >= cell.beginTime));
     if (!allowedTime) {
-      this.onPauseClick();
       return;
     }
     this.playTime = time;
@@ -852,7 +848,6 @@ export class NgxVideolineComponent implements OnInit, OnChanges {
   set_time_to_middle(time: number): void {
     if (this.ctx) {
       this.clearCanvas();
-      // this.startTimestamp = time - (this.hoursPerRuler * this.playBarDistanceLeft * 3600 * 1000);
       this.currentTimestamp = time;
       this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
       this.drawPlayBar();

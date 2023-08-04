@@ -7,7 +7,7 @@ import {VideoCellType} from 'ngx-video-timeline';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'ngx-video-timeline';
+  title = 'ngx-videoline';
 
   speed: number;
   canvasHeight: number;
@@ -25,15 +25,15 @@ export class AppComponent implements OnInit {
     this.endTimeThreshold = new Date(new Date().getTime() + (3 * 3600 * 1000));
     this.videoCells = [
       {
-        beginTime: 1690822800000,
-        endTime: 1690865999000,
+        beginTime: 1691118007105,
+        endTime: 1691118240152,
         style: {
           background: '#2d9dff78'
         }
       },
       {
-        beginTime: 1690869599000,
-        endTime: 1690873199000,
+        beginTime: 1691118251228,
+        endTime: 1691118979589,
         style: {
           background: '#2d9dff78'
         }
