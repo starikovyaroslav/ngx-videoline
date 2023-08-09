@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {VideoCellType} from 'ngx-video-timeline';
+import {VideoCellType} from 'ngx-timeliner';
 
 @Component({
   selector: 'app-root',
@@ -25,15 +25,8 @@ export class AppComponent implements OnInit {
     this.endTimeThreshold = new Date(new Date().getTime() + (3 * 3600 * 1000));
     this.videoCells = [
       {
-        beginTime: 1691118007105,
-        endTime: 1691118240152,
-        style: {
-          background: '#2d9dff78'
-        }
-      },
-      {
-        beginTime: 1691118251228,
-        endTime: 1691118979589,
+        beginTime: 1691082000000,
+        endTime: 1691168399000,
         style: {
           background: '#2d9dff78'
         }
