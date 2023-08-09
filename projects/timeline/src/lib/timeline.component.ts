@@ -444,6 +444,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.add_cells(this.timecell);
     }
     if (changes.startTimeThreshold) {
+      this.clearCanvas();
       const value = changes.startTimeThreshold.currentValue;
       if (changes.startTimeThreshold.currentValue instanceof String) {
         this.startTimeThreshold = new Date(value).getTime();
@@ -456,8 +457,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
         Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
         24;
-
       this.startTimestamp = Number(this.startTimeThreshold);
+      this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
     }
     if (changes.endTimeThreshold) {
       const value = changes.endTimeThreshold.currentValue;
@@ -471,7 +472,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
         Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
         24;
-
+      this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
     }
     if (changes.playTime) {
       const value = changes.playTime.currentValue;
