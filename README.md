@@ -156,6 +156,3 @@ export class AppComponent implements OnInit {
 |  field  |       name       |    type    | required/optional |       default       |
 | :----: | :--------------: | :--------: | :-------: | :----------------: |
 | background  |     The background color     |   string   |   required    |     undefined      |
-
-#License
-ngx-video-timeline is licensed under a [MIT License](https://opensource.org/licenses/MIT).
