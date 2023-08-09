@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {VideoCellType} from 'ngx-timeliner';
+import {VideoCellType} from 'ngx-video-timeline';
 
 @Component({
   selector: 'app-root',
