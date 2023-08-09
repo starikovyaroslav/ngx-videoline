@@ -1,5 +1,5 @@
 <canvas #timeline class="canvas"
-        [ngStyle]="{cursor: 'pointer',border: '1px solid',borderColor: borderColor,'backgroundColor': bgColor}"
+        [ngStyle]="{cursor: 'pointer',border: '1px solid bgColor',borderColor: borderColor,'backgroundColor': bgColor}"
         (dragstart)="onDragStart($event)"
         (mousedown)="mousedownFunc($event)"
         (mousemove)="mousemoveFunc($event)"

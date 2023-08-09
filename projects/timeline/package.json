@@ -1,6 +1,6 @@
 {
   "name": "ngx-timeliner",
-  "version": "0.10.12",
+  "version": "0.12.12",
   "peerDependencies": {
     "@angular/common": "~12.2.17",
     "@angular/core": "~12.2.17"
