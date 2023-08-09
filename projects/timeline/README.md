@@ -1,5 +1,4 @@
 # NgxTimeliner
-## [Demo](https://lenonmax.github.io/ngx-video-timeline/)
 ## example
 
 ![samplePic](src/assets/timeline.png)
@@ -157,6 +156,3 @@ export class AppComponent implements OnInit {
 |  field  |       name       |    type    | required/optional |       default       |
 | :----: | :--------------: | :--------: | :-------: | :----------------: |
 | background  |     The background color     |   string   |   required    |     undefined      |
-
-#License
-ngx-video-timeline is licensed under a [MIT License](https://opensource.org/licenses/MIT).
