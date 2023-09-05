@@ -68,7 +68,7 @@ export interface VideoCellType {
 @Component({
   selector: 'ngx-timeliner',
   templateUrl: './timeline.component.html',
-  styleUrls: ['./timeline.component.scss']
+  styleUrls: ['../../../../../IoT-web-mc/src/app/views/cameras/frames/evi-frame/timeline-controls/timeline/timeline.component.scss']
 })
 export class NgxTimelinerComponent implements OnInit, OnChanges {
 
@@ -183,10 +183,10 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
   gIsMousemove: boolean;
 
   // The position of the X-axis when the mouse is pressed
-  gMousedownCursor = undefined;
+  gMousedownCursor: number;
 
   // The position of the y-axis when the mouse is pressed
-  gMousedownCursorY = undefined;
+  gMousedownCursorY: number;
 
   // Time flow timer
   setTimeMove: Subscription;
@@ -208,6 +208,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
 
   // Play the Y-axis position 2 of the icon
   playBarOffsetY2: number;
+
+  isBarDown: boolean;
 
   // --- canvas data end ---//
 
@@ -353,7 +355,6 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     // Default false
     this.gIsMousedown = false;
     this.gIsMousemove = false;
-    this.gMousedownCursor = undefined;
 
     // px/ms
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
@@ -424,7 +425,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
 
       // The initial X position of the playback icon is in the middle of the scale
-      this.playBarOffsetX = this.canvasW / 2;
+      this.playBarOffsetX = 0;
 
       this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
       // Current timestamp
@@ -648,6 +649,11 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.playBarOffsetX,
       (this.scale * 4.25)
     );
+
+    this.playBarOffsetX1 = this.playBarOffsetX - (this.scale * 0.6);
+    this.playBarOffsetX2 = this.playBarOffsetX + (this.scale * 0.6);
+    this.playBarOffsetY1 = (this.scale * 2.5);
+    this.playBarOffsetY2 = ((this.scale * 3.5));
   }
 
   /**
@@ -714,22 +720,16 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.gMousedownCursorY = this.get_cursor_x_position(e).posY;
   }
 
-  mousewheelFunc(event: any): boolean {
+  mousewheelFunc(event: any): void {
     this.clearCanvas();
-
+    const posX = this.get_cursor_x_position(event).posX;
     if (event && event.preventDefault) {
       event.preventDefault();
-    } else {
-      window.event.returnValue = false;
-      return false;
     }
 
     const e = window.event || event;
     const delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
 
-    // Ms Remember the current middle time
-    const middleTime =
-      this.startTimestamp + (this.hoursPerRuler * this.playBarDistanceLeft * 3600 * 1000);
     if (delta < 0) {
       this.zoom = this.zoom + 1;
       if (this.zoom >= 24) {
@@ -746,9 +746,9 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       }
       this.hoursPerRuler = this.zoom;
     }
-
-    // startTimestamp = current middle time - zoom /2
+    const middleTime = this.startTimestamp + ((this.canvasW / 2) / this.pxPerMs);
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+    this.startTimestamp = middleTime - ((this.canvasW / 2) / this.pxPerMs);
     this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
     this.init(this.startTimestamp, this.timecell, true);
     this.drawPlayBar();
@@ -764,25 +764,20 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     const diffX = posX - this.gMousedownCursor;
     if (this.gIsMousedown) {
       if (
-        this.gMousedownCursor >= this.playBarOffsetX1 &&
-        this.gMousedownCursor <= this.playBarOffsetX2
+        posX >= Math.floor(this.playBarOffsetX1) &&
+        posX <= Math.floor(this.playBarOffsetX2) &&
+        this.gMousedownCursorY >= Math.floor(this.playBarOffsetY1) &&
+        this.gMousedownCursorY <= Math.floor(this.playBarOffsetY2) ||
+        this.isBarDown
       ) {
-        // this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
-        // this.playBarOffsetX = posX;
-        // this.playBarOffsetX1 = this.playBarOffsetX - (this.scale * 0.6);
-        // this.playBarOffsetX2 = this.playBarOffsetX + (this.scale * 0.6);
-        this.startTimestamp =
-          this.startTimestamp + Math.round(diffX / this.pxPerMs);
-        this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
-
+        this.isBarDown = true;
+        this.gIsMousemove = true;
+        this.playBarOffsetX = posX;
+        this.currentTimestamp = this.startTimestamp + posX / this.pxPerMs;
         this.drawPlayBar();
         this.init(this.startTimestamp, this.timecell, false);
-
-        this.gIsMousemove = true;
-
       } else {
-        this.startTimestamp =
-          this.startTimestamp - Math.round(diffX / this.pxPerMs);
+        this.startTimestamp = this.startTimestamp - Math.round(diffX / this.pxPerMs);
         this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
 
         this.drawPlayBar();
@@ -796,7 +791,6 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
 
     } else {
       const time = this.startTimestamp + posX / this.pxPerMs;
-      this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
       this.drawPlayBar();
       this.init(this.startTimestamp, this.timecell, true);
       this.drawLine(posX, 0, posX, 50, 'rgb(194, 202, 215)', 1);
@@ -823,9 +817,10 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       // Drag events
       this.gIsMousemove = false;
       this.gIsMousedown = false;
+      this.isBarDown = false;
       const newPlayTime = this.startTimestamp + Math.round(this.playBarOffsetX / this.pxPerMs);
       this.checkAllowedTime(newPlayTime);
-      // this.set_time_to_middle(this.playTime as number);
+      this.set_time_to_middle(this.playTime as number);
     } else {
       // Click event
       this.gIsMousedown = false;
@@ -903,9 +898,6 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * 清除canvas 每次重新绘制需要先清除
-   */
   clearCanvas(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, (this.scale * 7.5));
   }
