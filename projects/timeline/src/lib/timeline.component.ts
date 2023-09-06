@@ -15,7 +15,7 @@ import {interval, Subscription} from 'rxjs';
 /**
  * A utility class for working with dates.
  */
-export class DateUtil {
+class DateUtil {
 
   /**
    * Formats the given date according to the specified format.
@@ -137,6 +137,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
 
   // --- canvas data start ---//
 
+  millisInHour = 3600 * 1000;
+
   // canvas box
   canvas: any;
 
@@ -220,8 +222,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.forWardValue = 5000;
     this.speed = 1000;
     this.playTime = new Date().getTime();
-    this.startTimeThreshold = new Date().getTime() - 1 * 12 * 3600 * 1000;
-    this.endTimeThreshold = new Date().getTime() + 1 * 12 * 3600 * 1000;
+    this.startTimeThreshold = new Date().getTime() - 12 * this.millisInHour;
+    this.endTimeThreshold = new Date().getTime() + 12 * this.millisInHour;
     this.playClick = new EventEmitter<any>();
     this.mouseUp = new EventEmitter<any>();
     this.mouseDown = new EventEmitter<any>();
@@ -230,15 +232,15 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.isPlayClick = false;
     this.videoCells = [
       {
-        beginTime: new Date().getTime() - 3 * 3600 * 1000,
-        endTime: new Date().getTime() - 1 * 3600 * 1000,
+        beginTime: new Date().getTime() - 3 * this.millisInHour,
+        endTime: new Date().getTime() - this.millisInHour,
         style: {
           background: 'rgba(132, 244, 180, 0.498039)'
         }
       },
       {
-        beginTime: new Date().getTime() - 6 * 3600 * 1000,
-        endTime: new Date().getTime() - 4 * 3600 * 1000,
+        beginTime: new Date().getTime() - 6 * this.millisInHour,
+        endTime: new Date().getTime() - 4 * this.millisInHour,
         style: {
           background: 'rgba(132, 244, 180, 0.498039)'
         }
@@ -258,7 +260,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
   onResize(): void {
     this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
     this.canvasW = this.canvas.parentNode.offsetWidth;
-    this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
     this.drawPlayBar();
     this.init(this.startTimestamp, this.timecell, false);
@@ -357,18 +359,18 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.gIsMousemove = false;
 
     // px/ms
-    this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
 
     // The initial X position of the playback icon is in the middle of the scale
     this.playBarOffsetX = 0;
 
     this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
-    this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * 3600 * 1000;
+    this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * this.millisInHour;
 
-    this.playBarOffsetX1 = this.playBarOffsetX - (this.scale * 0.6);
-    this.playBarOffsetX2 = this.playBarOffsetX + (this.scale * 0.6);
-    this.playBarOffsetY1 = (this.scale * 2.5);
-    this.playBarOffsetY2 = ((this.scale * 3.5));
+    this.playBarOffsetX1 = this.playBarOffsetX - this.scale * 0.6;
+    this.playBarOffsetX2 = this.playBarOffsetX + this.scale * 0.6;
+    this.playBarOffsetY1 = this.scale * 2.5;
+    this.playBarOffsetY2 = this.scale * 3.5;
 
     // Initialize the timeline
     this.init(this.startTimestamp, this.timecell, false);
@@ -422,19 +424,19 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       // The leftmost timestamp defaults to 12 hours before the current time
       this.startTimestamp = Number(this.startTimeThreshold);
 
-      this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+      this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
 
       // The initial X position of the playback icon is in the middle of the scale
       this.playBarOffsetX = 0;
 
       this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
       // Current timestamp
-      this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * 3600 * 1000;
+      this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * this.millisInHour;
 
-      this.playBarOffsetX1 = this.playBarOffsetX - (this.scale * 0.6);
-      this.playBarOffsetX2 = this.playBarOffsetX + (this.scale * 0.6);
-      this.playBarOffsetY1 = (this.scale * 2.5);
-      this.playBarOffsetY2 = ((this.scale * 3.5));
+      this.playBarOffsetX1 = this.playBarOffsetX - this.scale * 0.6;
+      this.playBarOffsetX2 = this.playBarOffsetX + this.scale * 0.6;
+      this.playBarOffsetY1 = this.scale * 2.5;
+      this.playBarOffsetY2 = this.scale * 3.5;
 
       this.init(this.startTimestamp, this.timecell, false);
       this.drawPlayBar();
@@ -459,7 +461,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
         Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
         24;
       this.startTimestamp = Number(this.startTimeThreshold);
-      this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+      this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     }
     if (changes.endTimeThreshold) {
       const value = changes.endTimeThreshold.currentValue;
@@ -473,7 +475,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
         Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
         24;
-      this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+      this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     }
     if (changes.playTime) {
       const value = changes.playTime.currentValue;
@@ -650,10 +652,10 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       (this.scale * 4.25)
     );
 
-    this.playBarOffsetX1 = this.playBarOffsetX - (this.scale * 0.6);
-    this.playBarOffsetX2 = this.playBarOffsetX + (this.scale * 0.6);
-    this.playBarOffsetY1 = (this.scale * 2.5);
-    this.playBarOffsetY2 = ((this.scale * 3.5));
+    this.playBarOffsetX1 = this.playBarOffsetX - this.scale * 0.6;
+    this.playBarOffsetX2 = this.playBarOffsetX + this.scale * 0.6;
+    this.playBarOffsetY1 = this.scale * 2.5;
+    this.playBarOffsetY2 = this.scale * 3.5;
   }
 
   /**
@@ -722,7 +724,6 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
 
   mousewheelFunc(event: any): void {
     this.clearCanvas();
-    const posX = this.get_cursor_x_position(event).posX;
     if (event && event.preventDefault) {
       event.preventDefault();
     }
@@ -747,7 +748,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.hoursPerRuler = this.zoom;
     }
     const middleTime = this.startTimestamp + ((this.canvasW / 2) / this.pxPerMs);
-    this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     this.startTimestamp = middleTime - ((this.canvasW / 2) / this.pxPerMs);
     this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
     this.init(this.startTimestamp, this.timecell, true);
@@ -760,7 +761,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
   mousemoveFunc(e: MouseEvent): void {
     this.clearCanvas();
     const posX = this.get_cursor_x_position(e).posX;
-    this.pxPerMs = this.canvasW / (this.hoursPerRuler * 3600 * 1000);
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     const diffX = posX - this.gMousedownCursor;
     if (this.gIsMousedown) {
       if (
