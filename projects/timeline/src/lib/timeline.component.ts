@@ -10,212 +10,66 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {interval, Subscription} from 'rxjs';
 
-/**
- * A utility class for working with dates.
- */
-class DateUtil {
-
-  /**
-   * Formats the given date according to the specified format.
-   * @param date The date to format.
-   * @param format The format string, using the following placeholders:
-   *   - YYYY: four-digit year
-   *   - MM: two-digit month (zero-padded)
-   *   - DD: two-digit day of month (zero-padded)
-   *   - HH: two-digit hour (zero-padded, 24-hour format)
-   *   - mm: two-digit minute (zero-padded)
-   *   - ss: two-digit second (zero-padded)
-   * @returns The formatted date string.
-   */
-  static formatDate(date: Date, format: string): string {
-    // Extract the year, month, day, hours, minutes, and seconds from the date
-    const year = date.getFullYear().toString();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-
-    // Replace the placeholders in the format string with the corresponding date parts
-    return format
-      .replace('YYYY', year)
-      .replace('MM', month)
-      .replace('DD', day)
-      .replace('HH', hours)
-      .replace('mm', minutes)
-      .replace('ss', seconds);
-  }
-}
-
-export interface CanvasPos {
-  posX: number;
-  posY: number;
-}
-
-export interface VideoCellStyleType {
-  background: string;
-}
-
-export interface VideoCellType {
-  beginTime: number | string;
-  endTime: number | string;
-  style?: VideoCellStyleType;
-}
-
+import {DateUtil} from './dateUtils';
+import {CanvasPos, VideoCellType} from './interface';
 
 @Component({
   selector: 'ngx-timeliner',
   templateUrl: './timeline.component.html',
-  styleUrls: ['../../../../../IoT-web-mc/src/app/views/cameras/frames/evi-frame/timeline-controls/timeline/timeline.component.scss']
+  styleUrls: ['timeline.component.scss']
 })
 export class NgxTimelinerComponent implements OnInit, OnChanges {
-
-
-  // The height of the outer canvas
   @Input() canvasHeight = 50;
-
-  // Canvas scale is adjusted according to outer height
-  scale = this.canvasHeight / 4.55;
-
-  // Video playback time
-  @Input() playTime: number | string | Date;
-
-  // The video plays at twice the speed
+  @Input() playTime: number;
   @Input() speed: number;
-
-  // Video fast forward value
   @Input() forWardValue: number;
-
-  // Start time limit: Timestamp
-  @Input() startTimeThreshold: number | string | Date;
-
-  // End time limit: Timestamp
-  @Input() endTimeThreshold: number | string | Date;
-
-  // relation to Css Start
-
-  // color of canvas border
+  @Input() startTimeThreshold: number;
+  @Input() endTimeThreshold: number;
   @Input() borderColor: string;
-
-  // color of canvas backgraound
   @Input() bgColor: string;
-
-  // color of the bottomLine
   @Input() bottomLineColor: string;
-
-  // color of the verticalBar
   @Input() verticalBarColor: string;
-
-  // color of the playBar
   @Input() playBarColor: string;
-
-
-  // relation to Css End
-
-  // Video clips
+  @Input() notRecordColor: string;
   @Input() videoCells: VideoCellType[];
-
-  // flag of click play button
-  @Input() isPlayClick: boolean;
-
-  // emit data when click playButton
+  @Input() events: VideoCellType[];
   @Output() readonly playClick: EventEmitter<any>;
-
-  // emit data when mouseUp
   @Output() readonly mouseUp: EventEmitter<any>;
-
-  // emit data when mouseDown
   @Output() readonly mouseDown: EventEmitter<any>;
+  @Output() readonly mouseMove: EventEmitter<any>;
 
-  // emit data when keyUp
-  @Output() readonly keyUp: EventEmitter<any>;
+  readonly minutesPerStep: Array<number> = [1, 2, 5, 10, 15, 20, 30, 60, 120, 180, 240, 360, 720, 1440];
+  readonly millisInHour = 3600 * 1000;
 
-  // emit data when keyDown
-  @Output() readonly keyDown: EventEmitter<any>;
-
-  // --- canvas data start ---//
-
-  millisInHour = 3600 * 1000;
-
-  // canvas box
+  scale: number = this.canvasHeight / 4.55;
   canvas: any;
-
-  // canvas context
   ctx: CanvasRenderingContext2D;
-
-  // canvas width
   canvasW: number;
-
-  // canvas height
   canvasH: number;
-
-  // video clips in reality
   timecell: VideoCellType[];
-
-  // per minute stand for step
-  minutesPerStep: Array<number>;
-
-  // per minite stand for px
   pxPerMs: number;
-
-  // Minimum width between scales, unit px
   graduationStep: number;
-
-  // The timeline shows x hours
   hoursPerRuler: number;
-
-  // The leftmost timestamp that appears -- the default is the first 12 hours
   startTimestamp: number;
-
-  // current timestamp
+  endTimestamp: number;
   currentTimestamp: number;
-
-  // Px two hours apart
   distanceBetweenGtitle: number;
-
-  // zoom of canvas
   zoom: number;
-
-  // marker of drag an unreleased mouse event
   gIsMousedown: boolean;
-
-  // marker of drag the mouse move
   gIsMousemove: boolean;
-
-  // The position of the X-axis when the mouse is pressed
+  gIsMouseup: boolean;
   gMousedownCursor: number;
-
-  // The position of the y-axis when the mouse is pressed
   gMousedownCursorY: number;
-
-  // Time flow timer
-  setTimeMove: Subscription;
-
-  // The distance to the left of the play button
   playBarDistanceLeft: number;
-
-  // Play the initial position of the icon
   playBarOffsetX: number;
-
-  // Play the X-axis position 1 of the icon
   playBarOffsetX1: number;
-
-  // Play the X-axis position 2 of the icon
   playBarOffsetX2: number;
-
-  // Play the Y-axis position 1 of the icon
   playBarOffsetY1: number;
-
-  // Play the Y-axis position 2 of the icon
   playBarOffsetY2: number;
-
   isBarDown: boolean;
+  notRecordArea: VideoCellType;
 
-  // --- canvas data end ---//
-
-  // elements of the timeline
   @ViewChild('timeline', {static: true}) canvasExp: ElementRef<HTMLCanvasElement>;
 
   constructor() {
@@ -227,308 +81,189 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.playClick = new EventEmitter<any>();
     this.mouseUp = new EventEmitter<any>();
     this.mouseDown = new EventEmitter<any>();
-    this.keyUp = new EventEmitter<any>();
-    this.keyDown = new EventEmitter<any>();
-    this.isPlayClick = false;
-    this.videoCells = [
-      {
-        beginTime: new Date().getTime() - 3 * this.millisInHour,
-        endTime: new Date().getTime() - this.millisInHour,
-        style: {
-          background: 'rgba(132, 244, 180, 0.498039)'
-        }
-      },
-      {
-        beginTime: new Date().getTime() - 6 * this.millisInHour,
-        endTime: new Date().getTime() - 4 * this.millisInHour,
-        style: {
-          background: 'rgba(132, 244, 180, 0.498039)'
-        }
-      }
-    ];
+    this.mouseMove = new EventEmitter<any>();
     this.verticalBarColor = '#333333';
     this.bottomLineColor = 'transparent';
     this.borderColor = '#fff';
     this.bgColor = '#f7f7f7';
-    this.playBarColor = '#3daae2';
+    this.playBarColor = '#3ebeff';
+    this.notRecordColor = '#d91000';
   }
 
-  /**
-   * Browser change event
-   */
+  @HostListener('dragstart', ['$event'])
+  onDragStart(e: MouseEvent): boolean {
+    e.preventDefault();
+    return false;
+  }
+
   @HostListener('window:resize', [])
   onResize(): void {
     this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
     this.canvasW = this.canvas.parentNode.offsetWidth;
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
+    this.init(this.startTimestamp, this.timecell);
     this.drawPlayBar();
-    this.init(this.startTimestamp, this.timecell, false);
   }
 
-  /**
-   * Keyboard press event
-   */
-  @HostListener('window:keydown', ['$event'])
-  onKeyDown(event: any): void {
-    if (Number(event.keyCode) === 37) {
-      const newPlayTime = Number(this.playTime) - this.forWardValue;
-      this.checkAllowedTime(newPlayTime);
-      this.currentTimestamp = Number(this.currentTimestamp) - this.forWardValue;
-      this.playBarOffsetX--;
-    } else if (Number(event.keyCode === 39)) {
-      const newPlayTime = Number(this.playTime) + this.forWardValue;
-      this.checkAllowedTime(newPlayTime);
-      this.currentTimestamp = Number(this.currentTimestamp) + this.forWardValue;
-      this.playBarOffsetX++;
+  @HostListener('wheel', ['$event'])
+  mousewheelFunc(event: WheelEvent): void {
+    this.clearCanvas();
+    if (event && event.preventDefault) {
+      event.preventDefault();
     }
-    this.set_time_to_middle(this.playTime as number);
-
-    this.keyDown.emit(this.playTime);
+    const delta = Math.max(-1, Math.min(1, -event.deltaY));
+    if (delta < 0) {
+      this.zoom < 1 ? this.zoom += 0.5 : this.zoom += 1;
+      if (this.zoom >= 24) {
+        this.zoom = 24;
+      }
+      this.hoursPerRuler = this.zoom;
+    } else if (delta > 0) {
+      this.zoom < 1 ? this.zoom -= 0.5 : this.zoom -= 1;
+      if (this.zoom <= 0.5) {
+        this.zoom = 0.5;
+      }
+      this.hoursPerRuler = this.zoom;
+    }
+    const middleTime = this.startTimestamp + ((this.canvasW / 2) / this.pxPerMs);
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
+    this.startTimestamp = middleTime - ((this.canvasW / 2) / this.pxPerMs);
+    this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
+    this.init(this.startTimestamp, this.timecell);
+    this.drawPlayBar();
   }
 
-  /**
-   * Keyboard release event
-   */
-  @HostListener('window:keyup', ['$event'])
-  onKeyUp(event: any): void {
-    if (Number(event.keyCode) === 13 || Number(event.keyCode === 32)) {
-      this.isPlayClick ? this.onPauseClick() : this.onPlayClick();
+  @HostListener('mousedown', ['$event'])
+  mousedownFunc(e: MouseEvent): void {
+    this.gIsMousedown = true;
+    this.gMousedownCursor = this.get_cursor_x_position(e).posX;
+    this.gMousedownCursorY = this.get_cursor_x_position(e).posY;
+  }
+
+  @HostListener('mousemove', ['$event'])
+  mousemoveFunc(e: MouseEvent): void {
+    this.clearCanvas();
+    const posX = this.get_cursor_x_position(e).posX;
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
+    const diffX = posX - this.gMousedownCursor;
+    if (this.gIsMousedown) {
+      (
+        posX >= Math.floor(this.playBarOffsetX1) &&
+        posX <= Math.floor(this.playBarOffsetX2) &&
+        this.gMousedownCursorY >= Math.floor(this.playBarOffsetY1) &&
+        this.gMousedownCursorY <= Math.floor(this.playBarOffsetY2) ||
+        this.isBarDown
+      ) ? this.movePlayBar(posX) : this.moveTimeline(diffX, posX);
+      this.init(this.startTimestamp, this.timecell);
+      this.drawPlayBar();
+      this.gIsMousemove = true;
+      this.mouseUp.emit(this.currentTimestamp);
+    } else {
+      this.moveHintLine(posX);
     }
-    this.keyUp.emit(this.playTime);
+  }
+
+  @HostListener('mouseup', ['$event'])
+  mouseupFunc(e: MouseEvent): void {
+    this.gIsMouseup = true;
+
+    if (this.gIsMousemove) {
+      this.gIsMousemove = false;
+      this.gIsMousedown = false;
+
+      if (!this.isBarDown) {
+        return;
+      }
+
+      this.isBarDown = false;
+      const newPlayTime = this.startTimestamp + Math.round(this.playBarOffsetX / this.pxPerMs);
+      this.checkAllowedTime(newPlayTime);
+      this.setTime(this.playTime as number);
+    } else {
+      this.gIsMousedown = false;
+      this.playBarOffsetX = this.get_cursor_x_position(e).posX;
+
+      const newPlayTime = this.startTimestamp + Math.round(this.playBarOffsetX / this.pxPerMs);
+      this.checkAllowedTime(newPlayTime);
+      this.setTime(this.playTime as number);
+    }
+    this.gIsMouseup = false;
+    this.mouseDown.emit(this.playTime);
+  }
+
+  @HostListener('mouseout', ['$event'])
+  mouseoutFunc(): void {
+    this.clearCanvas();
+    this.gIsMousemove = false;
+    this.gIsMousedown = false;
+    this.isBarDown = false;
+    this.setTime(this.playTime as number);
+  }
+
+  get_cursor_x_position(e: MouseEvent): CanvasPos {
+    let posx = 0;
+    let posy = 0;
+    if (e.offsetX || e.offsetY) {
+      posx = e.offsetX;
+      posy = e.offsetY;
+    }
+
+    return {posX: posx, posY: posy};
   }
 
   ngOnInit(): void {
-    // Initialize data video group event stamp to show new Date().getTime()- number of hours
-
-    // Assign the Canvas DOM to the variable Canvas
-    this.canvas = this.canvasExp.nativeElement;
-
-    // Define the area of the canvas
-    this.ctx = this.canvas.getContext('2d');
-
-    // Redefine the width of the canvas. The default canvas is 300. Assign the width of the parent element
-    this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
-
-    // Store the width and height of the canvas
-    this.canvasW = this.canvas.width;
-    this.canvas.height = this.canvasHeight;
-    this.canvasH = this.canvas.height;
-
-    // Assign the video array to Timecell
-    this.timecell = this.videoCells;
-
-    // Initialize the number of steps per minute
-    this.minutesPerStep = [
-      1,
-      2,
-      5,
-      10,
-      15,
-      20,
-      30,
-      60,
-      120,
-      180,
-      240,
-      360,
-      720,
-      1440
-    ];
-
-    // Initialization style
-
-    // Minimum width between scales, in units of px 20px
-    this.graduationStep = 20;
-
-    // The timeline shows the time rounded up according to the time threshold
-    this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
-      Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
-      24;
-
-    // The leftmost timestamp defaults to 12 hours before the current time
-    this.startTimestamp = Number(this.startTimeThreshold);
-
-    // Default distance 80
-    this.distanceBetweenGtitle = 80;
-    // Default zoom 24
-    this.zoom = 24;
-
-    // Default false
-    this.gIsMousedown = false;
-    this.gIsMousemove = false;
-
-    // px/ms
-    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
-
-    // The initial X position of the playback icon is in the middle of the scale
-    this.playBarOffsetX = 0;
-
-    this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
-    this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * this.millisInHour;
-
-    this.playBarOffsetX1 = this.playBarOffsetX - this.scale * 0.6;
-    this.playBarOffsetX2 = this.playBarOffsetX + this.scale * 0.6;
-    this.playBarOffsetY1 = this.scale * 2.5;
-    this.playBarOffsetY2 = this.scale * 3.5;
-
-    // Initialize the timeline
-    this.init(this.startTimestamp, this.timecell, false);
-    // Draw the play button
-    this.drawPlayBar();
+    this.prepareCanvas();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Refactor the playback component when the width and height change
     if (changes.canvasHeight) {
       this.canvasHeight = changes.canvasHeight.currentValue;
-
-      // Assign the Canvas DOM to the variable Canvas
-      this.canvas = this.canvasExp.nativeElement;
-
-      // Define the area of the canvas
-      this.ctx = this.canvas.getContext('2d');
-      // Redefine the width of the canvas. The default canvas is 300. Assign the width of the parent element
-      this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
-
-      // Store the width and height of the canvas
-      this.canvasW = this.canvas.width;
-
-      this.canvas.height = this.canvasHeight;
-      this.canvasH = this.canvas.height;
-
-      // Assign the video array to Timecell
-      this.timecell = this.videoCells;
-
-      this.minutesPerStep = [
-        1,
-        2,
-        5,
-        10,
-        15,
-        20,
-        30,
-        60,
-        120,
-        180,
-        240,
-        360,
-        720,
-        1440
-      ];
-      // The timeline shows the time rounded up according to the time threshold
-      this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
-        Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
-        24;
-
-      // The leftmost timestamp defaults to 12 hours before the current time
-      this.startTimestamp = Number(this.startTimeThreshold);
-
-      this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
-
-      // The initial X position of the playback icon is in the middle of the scale
-      this.playBarOffsetX = 0;
-
-      this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
-      // Current timestamp
-      this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * this.millisInHour;
-
-      this.playBarOffsetX1 = this.playBarOffsetX - this.scale * 0.6;
-      this.playBarOffsetX2 = this.playBarOffsetX + this.scale * 0.6;
-      this.playBarOffsetY1 = this.scale * 2.5;
-      this.playBarOffsetY2 = this.scale * 3.5;
-
-      this.init(this.startTimestamp, this.timecell, false);
-      this.drawPlayBar();
+      this.prepareCanvas();
     }
     if (changes.videoCells) {
       this.videoCells = changes.videoCells.currentValue;
       this.timecell = this.videoCells;
       this.add_cells(this.timecell);
     }
+    if (changes.events) {
+      this.events = changes.events.currentValue;
+      this.add_cells(this.events);
+    }
     if (changes.startTimeThreshold) {
-      this.clearCanvas();
-      const value = changes.startTimeThreshold.currentValue;
-      if (changes.startTimeThreshold.currentValue instanceof String) {
-        this.startTimeThreshold = new Date(value).getTime();
-      } else if (value instanceof Date) {
-        this.startTimeThreshold = value.getTime();
-      } else if (typeof value === 'number') {
-        this.startTimeThreshold = Number(value);
-      }
-
-      this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
-        Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
-        24;
-      this.startTimestamp = Number(this.startTimeThreshold);
-      this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
+      this.updateStartTimeThreshold(changes.startTimeThreshold.currentValue);
     }
     if (changes.endTimeThreshold) {
-      const value = changes.endTimeThreshold.currentValue;
-      if (changes.endTimeThreshold.currentValue instanceof String) {
-        this.endTimeThreshold = new Date(value).getTime();
-      } else if (value instanceof Date) {
-        this.endTimeThreshold = value.getTime();
-      } else if (typeof value === 'number') {
-        this.endTimeThreshold = Number(value);
-      }
-      this.hoursPerRuler = Math.ceil((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600) < 24 ?
-        Number(((Number(this.endTimeThreshold) - Number(this.startTimeThreshold)) / 1000 / 3600).toFixed(5)) :
-        24;
-      this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
+      this.updateEndTimeThreshold(changes.endTimeThreshold.currentValue);
     }
     if (changes.playTime) {
-      const value = changes.playTime.currentValue;
-      if (changes.playTime.currentValue instanceof String) {
-        this.playTime = new Date(value).getTime();
-      } else if (value instanceof Date) {
-        this.playTime = value.getTime();
-      } else if (typeof value === 'number') {
-        this.playTime = Number(value);
-      }
-      this.set_time_to_middle(new Date(this.playTime).getTime());
+      this.updatePlayTime(changes.playTime.currentValue);
     }
     if (changes.speed) {
-
       this.speed = Number(changes.speed.currentValue) * 1000;
     }
     if (changes.forWardValue) {
-
       this.forWardValue = Number(changes.forWardValue.currentValue) * 1000;
-    }
-
-    if (changes.isPlayClick) {
-      if (changes.isPlayClick.currentValue) {
-        this.onPlayClick();
-      } else {
-        this.onPauseClick();
-      }
     }
   }
 
-  /**
-   * Initialize
-   * @param  startTimestamp Leftmost time
-   * @param  timecell Video segment array
-   * @param  redrawFlag Whether to redraw the mark
-   */
-  init(startTimestamp: number, timecell: VideoCellType[], redrawFlag: boolean): void {
+  private init(startTimestamp: number, timecell: VideoCellType[]): void {
+    this.endTimestamp = this.startTimestamp + this.canvasW / this.pxPerMs;
     this.timecell = timecell;
     this.startTimestamp = startTimestamp;
-    if (this.currentTimestamp > this.endTimeThreshold) {
-      this.currentTimestamp = Number(this.endTimeThreshold);
-      this.playTime = Number(this.endTimeThreshold);
-    } else if (
-      this.currentTimestamp <
-      this.startTimeThreshold
-    ) {
-      this.currentTimestamp = Number(this.startTimestamp);
-      this.playTime = Number(this.startTimestamp);
-    }
-    this.drawCellBg();
-    this.add_graduations(startTimestamp);
+    this.notRecordArea = {
+      beginTime: this.startTimestamp,
+      endTime: new Date().getTime() <= this.endTimeThreshold ? timecell[timecell.length - 1].endTime : this.endTimestamp,
+      style: {
+        background: this.notRecordColor,
+      }
+    };
+
+    this.add_cells([this.notRecordArea]);
     this.add_cells(timecell);
-    // Draw the verticalBar
+    this.add_cells(this.events);
+    this.drawCellBg();
+    this.addGraduations(startTimestamp);
     this.drawLine(
       0,
       this.canvasH,
@@ -539,107 +274,41 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     );
   }
 
-  /**
-   * Draw add scale
-   * @param  startTimestamp Leftmost time
-   */
-  add_graduations(startTimestamp: number): void {
-    // px/min
+  private addGraduations(startTimestamp: number): void {
     const pxPerMin = this.canvasW / (this.hoursPerRuler * 60);
-    // px/ms
-    const pxPerMs = this.canvasW / (this.hoursPerRuler * 60 * 60 * 1000);
-    // The default minimum value of PX/steo is 20px
     let pxPerStep = this.graduationStep;
-
-    // Min/steo
     let minPerStep = pxPerStep / pxPerMin;
-
-    for (const v of this.minutesPerStep) {
-      if (minPerStep <= v) {
-        // Keep each cell within the range specified by minutesPerStep
-        minPerStep = v;
+    let mediumStep = 30;
+    for (const step of this.minutesPerStep) {
+      if (minPerStep <= step) {
+        minPerStep = step;
         pxPerStep = pxPerMin * minPerStep;
         break;
       }
     }
-    let mediumStep = 30;
-    for (const v of this.minutesPerStep) {
-      if (this.distanceBetweenGtitle / pxPerMin <= v) {
-        mediumStep = v;
+
+    for (const step of this.minutesPerStep) {
+      if (this.distanceBetweenGtitle / pxPerMin <= step) {
+        mediumStep = step;
         break;
       }
     }
-    // The total number
-    const numSteps = this.canvasW / pxPerStep;
-
-    let graduationLeft: number;
-    let graduationTime: number;
-    let lineH: number;
-
-    // The initial offset time (ms)
-    const msOffset = this.ms_to_next_step(
-      startTimestamp,
-      minPerStep * 60 * 1000
-    );
-
-    // The initial offset is (px)
-    const pxOffset = msOffset * pxPerMs;
-
-    // ms/step
-    const msPerStep = pxPerStep / pxPerMs;
-    for (let i = 0; i < numSteps; i++) {
-      // Distance = offset distance to start + steps *px/ steps
-      graduationLeft = pxOffset + i * pxPerStep;
-
-      // Time = left start time + offset time + steps *ms/ steps
-      graduationTime =
-        Number(startTimestamp) +
-        Number(msOffset) +
-        i * Number(msPerStep);
-
-      const date = new Date(graduationTime);
-      if (date.getUTCHours() === 0 && date.getUTCMinutes() === 0) {
-        lineH = (this.scale * 1.25);
-        const bigDate = DateUtil.formatDate(date, 'HH:mm:ss');
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(bigDate, graduationLeft, (this.scale * 1.5));
-        this.ctx.fillStyle = this.verticalBarColor;
-      } else if ((graduationTime / (60 * 1000)) % mediumStep === 0) {
-        lineH = (this.scale * 0.75);
-        const middleDate = DateUtil.formatDate(date, 'HH:mm:ss');
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(middleDate, graduationLeft, (this.scale * 1.5));
-        this.ctx.fillStyle = this.verticalBarColor;
-      } else {
-        lineH = (this.scale * 0.5);
-      }
-      this.drawLine(
-        graduationLeft,
-        0,
-        graduationLeft,
-        lineH,
-        this.verticalBarColor,
-        1
-      );
-    }
+    this.addGraduationElements(startTimestamp, minPerStep, pxPerStep, mediumStep);
   }
 
-  /**
-   * Draw the play button
-   */
-  drawPlayBar(): void {
+  private drawPlayBar(): void {
     this.ctx.beginPath();
     this.ctx.moveTo(this.playBarOffsetX, 0);
-    this.ctx.lineTo(this.playBarOffsetX, (this.scale * 1.75));
-    this.ctx.strokeStyle = this.playBarColor;
+    this.ctx.lineTo(this.playBarOffsetX, (this.scale * 2));
+    this.ctx.strokeStyle = 'red';
     this.ctx.stroke();
-    this.ctx.moveTo(this.playBarOffsetX, (this.scale * 1.75));
-    this.ctx.lineTo(this.playBarOffsetX, (this.scale * 1.75));
-    this.ctx.lineTo(this.playBarOffsetX - (this.scale * 0.6), (this.scale * 2.5));
-    this.ctx.lineTo(this.playBarOffsetX - (this.scale * 0.6), (this.scale * 3.5));
-    this.ctx.lineTo(this.playBarOffsetX + (this.scale * 0.6), (this.scale * 3.5));
-    this.ctx.lineTo(this.playBarOffsetX + (this.scale * 0.6), (this.scale * 2.5));
-    this.ctx.lineTo(this.playBarOffsetX, (this.scale * 1.75));
+    this.ctx.moveTo(this.playBarOffsetX, (this.scale * 2));
+    this.ctx.lineTo(this.playBarOffsetX, (this.scale * 2));
+    this.ctx.lineTo(this.playBarOffsetX - (this.scale * .6), (this.scale * 2.75));
+    this.ctx.lineTo(this.playBarOffsetX - (this.scale * .6), (this.scale * 3.75));
+    this.ctx.lineTo(this.playBarOffsetX + (this.scale * .6), (this.scale * 3.75));
+    this.ctx.lineTo(this.playBarOffsetX + (this.scale * .6), (this.scale * 2.75));
+    this.ctx.lineTo(this.playBarOffsetX, (this.scale * 2));
     this.ctx.fillStyle = this.playBarColor;
     this.ctx.fill();
     this.ctx.closePath();
@@ -649,25 +318,13 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.ctx.fillText(
       DateUtil.formatDate(new Date(time), 'HH:mm:ss'),
       this.playBarOffsetX,
-      (this.scale * 4.25)
+      (this.scale * 4.55)
     );
 
-    this.playBarOffsetX1 = this.playBarOffsetX - this.scale * 0.6;
-    this.playBarOffsetX2 = this.playBarOffsetX + this.scale * 0.6;
-    this.playBarOffsetY1 = this.scale * 2.5;
-    this.playBarOffsetY2 = this.scale * 3.5;
+    this.updatePlayBarScale();
   }
 
-  /**
-   * Draw the line
-   * @param  beginX The X-axis to start with
-   * @param  beginY The Y-axis to start with
-   * @param  endX The end of the X-axis
-   * @param  endY The end of the Y-axis
-   * @param  color color
-   * @param  width width
-   */
-  drawLine(
+  private drawLine(
     beginX: number,
     beginY: number,
     endX: number,
@@ -683,257 +340,228 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.ctx.stroke();
   }
 
-  /**
-   * Add video segment
-   * @param  cells Video array
-   */
-  add_cells(cells: any): void {
-    cells.forEach((cell: MouseEvent) => {
+  private add_cells(cells: VideoCellType[]): void {
+    cells.forEach((cell) => {
       this.draw_cell(cell);
     });
   }
 
-  /**
-   * Draw video blocks
-   * @param  cell The cell includes beginTime Ms; The endTime ms; style;
-   */
-  draw_cell(cell: any): void {
+  private draw_cell(cell: VideoCellType): void {
     const pxPerMs = this.canvasW / (this.hoursPerRuler * 60 * 60 * 1000); // px/ms
     const beginX = (cell.beginTime - this.startTimestamp) * pxPerMs;
     const cellWidth = (cell.endTime - cell.beginTime) * pxPerMs;
     this.ctx.fillStyle = cell.style.background;
-    this.ctx.fillRect(beginX, 0, cellWidth, (this.scale * 0.75));
+    this.ctx.fillRect(beginX, 0, cellWidth, (this.scale));
   }
 
-  /**
-   * Draws the background of the video block
-   */
-  drawCellBg(): void {
+  private drawCellBg(): void {
     this.ctx.fillStyle = this.verticalBarColor;
     this.ctx.fillRect(100, 0, this.canvasW, 0);
   }
 
-  /**
-   * Drag/click the Mousedown event
-   */
-  mousedownFunc(e: MouseEvent): void {
-    this.gIsMousedown = true;
-    this.gMousedownCursor = this.get_cursor_x_position(e).posX;
-    this.gMousedownCursorY = this.get_cursor_x_position(e).posY;
-  }
-
-  mousewheelFunc(event: any): void {
-    this.clearCanvas();
-    if (event && event.preventDefault) {
-      event.preventDefault();
-    }
-
-    const e = window.event || event;
-    const delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
-
-    if (delta < 0) {
-      this.zoom = this.zoom + 1;
-      if (this.zoom >= 24) {
-        // Shrink to a minimum of 24 hours
-        this.zoom = 24;
-      }
-      this.hoursPerRuler = this.zoom;
-    } else if (delta > 0) {
-      // amplification
-      this.zoom = this.zoom - 1;
-      if (this.zoom <= 1) {
-        // Zoom in at most one hour
-        this.zoom = 1;
-      }
-      this.hoursPerRuler = this.zoom;
-    }
-    const middleTime = this.startTimestamp + ((this.canvasW / 2) / this.pxPerMs);
-    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
-    this.startTimestamp = middleTime - ((this.canvasW / 2) / this.pxPerMs);
-    this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
-    this.init(this.startTimestamp, this.timecell, true);
-    this.drawPlayBar();
-  }
-
-  /**
-   * Drag/mouse hover to display mousemove events
-   */
-  mousemoveFunc(e: MouseEvent): void {
-    this.clearCanvas();
-    const posX = this.get_cursor_x_position(e).posX;
-    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
-    const diffX = posX - this.gMousedownCursor;
-    if (this.gIsMousedown) {
-      if (
-        posX >= Math.floor(this.playBarOffsetX1) &&
-        posX <= Math.floor(this.playBarOffsetX2) &&
-        this.gMousedownCursorY >= Math.floor(this.playBarOffsetY1) &&
-        this.gMousedownCursorY <= Math.floor(this.playBarOffsetY2) ||
-        this.isBarDown
-      ) {
-        this.isBarDown = true;
-        this.gIsMousemove = true;
-        this.playBarOffsetX = posX;
-        this.currentTimestamp = this.startTimestamp + posX / this.pxPerMs;
-        this.drawPlayBar();
-        this.init(this.startTimestamp, this.timecell, false);
-      } else {
-        this.startTimestamp = this.startTimestamp - Math.round(diffX / this.pxPerMs);
-        this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
-
-        this.drawPlayBar();
-        this.init(this.startTimestamp, this.timecell, true);
-
-        this.gIsMousemove = true;
-        this.gMousedownCursor = posX;
-
-      }
-      this.mouseUp.emit(this.currentTimestamp);
-
-    } else {
-      const time = this.startTimestamp + posX / this.pxPerMs;
-      this.drawPlayBar();
-      this.init(this.startTimestamp, this.timecell, true);
-      this.drawLine(posX, 0, posX, 50, 'rgb(194, 202, 215)', 1);
-
-      this.ctx.fillStyle = 'rgb(194, 202, 215)';
-      this.ctx.textAlign = 'center';
-      this.ctx.fillText(
-        DateUtil.formatDate(
-          new Date(time),
-          'YYYY-MM-DD HH:mm:ss'
-        ),
-        posX,
-        (this.scale * 3)
-      );
-
-    }
-  }
-
-  /**
-   * Drag/click the Mouseup event
-   */
-  mouseupFunc(e: MouseEvent): void {
-    if (this.gIsMousemove) {
-      // Drag events
-      this.gIsMousemove = false;
-      this.gIsMousedown = false;
-      this.isBarDown = false;
-      const newPlayTime = this.startTimestamp + Math.round(this.playBarOffsetX / this.pxPerMs);
-      this.checkAllowedTime(newPlayTime);
-      this.set_time_to_middle(this.playTime as number);
-    } else {
-      // Click event
-      this.gIsMousedown = false;
-
-      // Mouse distance (px)
-      const posX = this.get_cursor_x_position(e).posX;
-
-      this.playBarOffsetX = posX;
-
-      const newPlayTime = this.startTimestamp + Math.round(this.playBarOffsetX / this.pxPerMs);
-      this.checkAllowedTime(newPlayTime);
-      this.set_time_to_middle(this.playTime as number);
-    }
-    this.mouseDown.emit(this.playTime);
-  }
-
-  checkAllowedTime(time: number): void {
-    const allowedTime = !!this.timecell.find(cell => (time <= cell.endTime && time >= cell.beginTime));
-    if (!allowedTime) {
-      return;
-    }
-    this.playTime = time;
-  }
-
-  /**
-   * Mouseout of the hidden time mouseout event
-   */
-  mouseoutFunc(): void {
-    this.clearCanvas();
-    this.drawPlayBar();
-    this.init(this.startTimestamp, this.timecell, true);
-  }
-
-  /**
-   * Get the mouse POSx
-   * @param  e event
-   */
-  get_cursor_x_position(e: any): CanvasPos {
-    let posx = 0;
-    let posy = 0;
-
-    if (!e) {
-      e = window.event;
-    }
-    if (e.offsetX || e.offsetY) {
-      posx = e.offsetX;
-      posy = e.offsetY;
-    }
-
-    return {posX: posx, posY: posy};
-  }
-
-  /**
-   * The offset of the left start time, returns the unit ms
-   * @param  timestamp The time stamp
-   * @param  step The offset
-   */
-  ms_to_next_step(timestamp: number, step: number): number {
+  private ms_to_next_step(timestamp: number, step: number): number {
     const remainder = timestamp % step;
     return remainder ? step - remainder : 0;
   }
 
-  /**
-   * Set the time to jump to the middle red line
-   *  @param  time Unit of ms
-   */
-
-  set_time_to_middle(time: number): void {
+  private setTime(time: number): void {
     if (this.ctx) {
       this.clearCanvas();
       this.currentTimestamp = time;
       this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
+      this.init(this.startTimestamp, this.timecell);
       this.drawPlayBar();
-      this.init(this.startTimestamp, this.timecell, true);
     }
   }
 
-  clearCanvas(): void {
+  private clearCanvas(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, (this.scale * 7.5));
   }
 
-  /**
-   * Click to play
-   */
+  private moveHintLine(posX: number): void {
+    const time = this.startTimestamp + posX / this.pxPerMs;
+    this.init(this.startTimestamp, this.timecell);
+    this.drawPlayBar();
+    this.drawLine(posX, 0, posX, this.scale * 3, '#808080', 1);
 
-  onPlayClick(): void {
-    this.isPlayClick = true;
-    this.setTimeMove = interval(this.speed).subscribe(() => {
-      const newPlayTime = Number(this.playTime) + 1 * 1000;
-      this.checkAllowedTime(newPlayTime);
-      this.playClick.emit(this.playTime);
-      this.set_time_to_middle(this.playTime as number);
-    });
+    this.ctx.fillStyle = '#808080';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(
+      DateUtil.formatDate(new Date(time), 'HH:mm:ss'),
+      posX,
+      (this.scale * 3.75)
+    );
   }
 
-  /**
-   * Click on the pause
-   */
-  onPauseClick(): void {
-    this.isPlayClick = false;
-    if (this.setTimeMove) {
-      this.setTimeMove.unsubscribe();
-      this.playClick.emit(this.playTime);
+  private moveTimeline(diffX: number, posX: number): void {
+    this.startTimestamp = this.startTimestamp - Math.round(diffX / this.pxPerMs);
+    this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
+    this.gMousedownCursor = posX;
+  }
+
+  private movePlayBar(posX: number): void {
+    this.isBarDown = true;
+    this.playBarOffsetX = posX;
+    this.currentTimestamp = this.startTimestamp + posX / this.pxPerMs;
+    this.mouseMove.emit(this.currentTimestamp);
+  }
+
+  private checkAllowedTime(time: number): void {
+    const allowedTime = !!this.timecell.find((cell) => (time <= cell.endTime && time >= cell.beginTime));
+
+    if (!allowedTime) {
+      this.checkForTimeHole(time);
+      return;
+    }
+    this.checkForEvents(time);
+  }
+
+  private addGraduationElements(startTimestamp: number, minPerStep: number, pxPerStep: number, mediumStep: number): void {
+    const numSteps = this.canvasW / pxPerStep;
+    const msPerStep = pxPerStep / this.pxPerMs;
+    const msOffset = this.ms_to_next_step(startTimestamp, minPerStep * 60 * 1000);
+    const pxOffset = msOffset * this.pxPerMs;
+    let graduationLeft: number;
+    let graduationTime: number;
+    let lineH: number;
+
+    for (let i = 0; i < numSteps; i++) {
+      graduationLeft = pxOffset + i * pxPerStep;
+      graduationTime = Number(startTimestamp) + Number(msOffset) + i * Number(msPerStep);
+      const date = new Date(graduationTime);
+
+      if (date.getUTCHours() === 0 && date.getUTCMinutes() === 0) {
+        lineH = (this.scale * 1.75);
+        const bigDate = DateUtil.formatDate(date, 'HH:mm:ss');
+        this.addGraduationText(bigDate, graduationLeft);
+      } else if ((graduationTime / (60 * 1000)) % mediumStep === 0) {
+        lineH = (this.scale * 1.25);
+        const middleDate = DateUtil.formatDate(date, 'HH:mm:ss');
+        this.addGraduationText(middleDate, graduationLeft);
+      } else {
+        lineH = (this.scale * 0.75);
+      }
+      this.drawLine(
+        graduationLeft,
+        0,
+        graduationLeft,
+        lineH,
+        this.verticalBarColor,
+        1
+      );
     }
   }
 
-  /**
-   * Temporary unused
-   * @param event MouseEvent
-   */
-  onDragStart(e: MouseEvent): boolean {
-    e.preventDefault();
-    return false;
+  private prepareCanvas(): void {
+    this.canvas = this.canvasExp.nativeElement;
+    this.ctx = this.canvas.getContext('2d');
+    this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
+    this.canvasW = this.canvas.width;
+    this.canvas.height = this.canvasHeight;
+    this.canvasH = this.canvas.height;
+    this.timecell = this.videoCells;
+    this.graduationStep = 20;
+    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600) < 24 ?
+      Number(((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600).toFixed(5)) :
+      24;
+    this.startTimestamp = Number(this.startTimeThreshold);
+    this.distanceBetweenGtitle = 80;
+    this.zoom = 24;
+    this.gIsMousedown = false;
+    this.gIsMousemove = false;
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
+    this.playBarOffsetX = 0;
+    this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
+    this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * this.millisInHour;
+
+    this.updatePlayBarScale();
+    this.init(this.startTimestamp, this.timecell);
+    this.drawPlayBar();
+  }
+
+  private updatePlayBarScale(): void {
+    this.playBarOffsetX1 = this.playBarOffsetX - this.scale * 0.6;
+    this.playBarOffsetX2 = this.playBarOffsetX + this.scale * 0.6;
+    this.playBarOffsetY1 = this.scale * 2.75;
+    this.playBarOffsetY2 = this.scale * 3.75;
+  }
+
+  private checkForTimeHole(time: number): void {
+    this.timecell.forEach((cell, i, timecell) => {
+      const lastIndex = timecell.length - 1;
+      const beginCell: VideoCellType = timecell[0];
+      const lastCell: VideoCellType = timecell[lastIndex];
+
+      if (time > lastCell.endTime) {
+        this.playTime = lastCell.beginTime;
+        return;
+      }
+
+      if (time < beginCell.beginTime) {
+        this.playTime = beginCell.beginTime;
+        return;
+      }
+
+      if (i >= lastIndex) {
+        return;
+      }
+      const nextCell = timecell[i + 1];
+      const isTimeHole = time > cell.endTime && time < nextCell.beginTime;
+
+      if (isTimeHole) {
+        const middleTimeHole = (nextCell.beginTime + cell.endTime) / 2;
+        if (time < middleTimeHole) {
+          this.playTime = cell.beginTime;
+        } else {
+          this.playTime = nextCell.beginTime;
+        }
+        return;
+      }
+    });
+  }
+
+  private checkForEvents(time: number): void {
+    if (!this.events.length) {
+      this.playTime = time;
+      return;
+    }
+
+    this.events.some(event => {
+      if (time <= event.endTime && time >= event.beginTime) {
+        this.playTime = event.beginTime;
+        return true;
+      }
+      this.playTime = time;
+      return false;
+    });
+  }
+
+  private updatePlayTime(playTime: number): void {
+    this.playTime = playTime;
+    this.setTime(new Date(this.playTime).getTime());
+  }
+
+  private updateEndTimeThreshold(endTimeThreshold: number): void {
+    this.endTimeThreshold = endTimeThreshold;
+    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600) < 24 ?
+      Number(((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600).toFixed(5)) :
+      24;
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
+  }
+
+  private updateStartTimeThreshold(startTimeThreshold: number): void {
+    this.clearCanvas();
+    this.startTimeThreshold = startTimeThreshold;
+    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600) < 24 ?
+      Number(((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600).toFixed(5)) :
+      24;
+    this.startTimestamp = this.startTimeThreshold;
+    this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
+  }
+
+  private addGraduationText(date: string, graduationLeft: number): void {
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(date, graduationLeft, (this.scale * 2));
+    this.ctx.fillStyle = this.verticalBarColor;
   }
 }

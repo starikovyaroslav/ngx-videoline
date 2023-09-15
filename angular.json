@@ -133,7 +133,7 @@
       "projectType": "library",
       "root": "projects/timeline",
       "sourceRoot": "projects/timeline/src",
-      "prefix": "ngx-video",
+      "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",

@@ -1,39 +1,30 @@
 # NgxTimeliner
-## example
 
-![samplePic](src/assets/timeline.png)
+## Описание
+Библиотека таймлайна для видеоплеера
 
-## Installation
+![samplePic](projects/timeline/src/assets/timeline.png)
+
+## Установка
 
 #### Compatibility
 
-| Angular | Latest ngx-timeliner compatible |
-| ------- |---------------------------------|
-| 16      | 0.10.16                         |
-| 15      | 0.10.15                         |
-| 14      | 0.10.14                         |
-| 13      | 0.10.13                         |
-| 12      | 0.10.12                         |
-| 11      | 0.10.11                         |
-| 10      | 0.10.10                         |
-| 9      | 0.10.9                          |
-
-## Getting Started
+## Установка зависимостей
 ```
 npm i ngx-timeliner --save
 ```
-or
+или
 ```
 yarn add ngx-timeliner
 ```
-## Usage
-Import the module into your module
+## Использование
+Импортируйте модуль таймлайна
 ```
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { NgxTimeliner } from 'projects/timeline/src/lib/timeline.module';
+import { NgxTimelinerModule } from 'projects/timeline/src/lib/timeline.module';
 
 @NgModule({
     declarations: [
@@ -41,7 +32,7 @@ import { NgxTimeliner } from 'projects/timeline/src/lib/timeline.module';
     ],
     imports: [
         BrowserModule,
-        NgxTimeliner
+        NgxTimelinerModule
     ],
     providers: [],
     bootstrap: [AppComponent]
@@ -49,7 +40,7 @@ import { NgxTimeliner } from 'projects/timeline/src/lib/timeline.module';
 export class AppModule { }
 
 ```
-then use it in html
+Используйте его в шаблоне
 ```
 <ngx-timeliner
     class="canvas"
@@ -64,85 +55,23 @@ then use it in html
 >
 </ngx-timeliner>
 ```
-in ts file
-```
-import { Component, OnInit } from '@angular/core';
-import { VideoCellType } from 'projects/timeline/src/lib/timeline.component';
-
-@Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss']
-})
-export class AppComponent implements OnInit {
-    title = 'ngx-timeliner';
-
-    speed: number;
-    canvasHeight: number;
-    startTimeThreshold: number;
-    endTimeThreshold: number;
-    videoCells: VideoCellType[];
-    playTime: Date;
-    isPlayClick: boolean;
-
-    constructor() {
-        this.speed = 10;
-        this.isPlayClick = false;
-        this.canvasHeight = 80;
-        this.startTimeThreshold = new Date().getTime() - 1 * 3600 * 1000;
-        this.endTimeThreshold = new Date().getTime() + 1 * 3600 * 1000;
-        this.videoCells = [];
-        this.playTime = new Date();
-    }
-
-    onPlay(): void {
-
-        this.isPlayClick = true;
-        this.startTimeThreshold = new Date().getTime() - 1 * 3600 * 1000;
-    }
-
-    onPause(): void {
-
-        this.isPlayClick = false;
-        // this.endTimeThreshold = new Date().getTime() + 1 * 3600 * 1000;
-    }
-
-    onPlayClick(date: number): void {
-        // console.log(new Date(date));
-        // this.canvasHeight = 60;
-    }
-
-
-    selectedTime(date: any): void {
-        this.playTime = date.value;
-    }
-
-    ngOnInit(): void {
-    }
-    onDragStart(): void {
-        
-    }
-}
-```
 ## API
 
-|               Name               |      Type      |        Default/Return        |          Description          |
-| :------------------------------: | :------------: | :--------------------------: | :---------------------------: |
-|           [canvasHeight]           |      number       |             50             |            Canvas height (not less than 50)             |
-|            [playTime]             | number,string,Date |        new Date().getTime() - 1 * 24 * 3600 * 1000        |           Playback time (default: the previous day)            |
-|           [speed]            |    number     |            1             |        The video plays at twice the speed         |
-|           [forWardValue]            |    number     |            1             |        Fast forward/fast backward video         |
-|        [startTimeThreshold]         |    number,string,Date     |            new Date().getTime() - 1 * 12  * 3600 * 1000             |     Left time threshold      |
-|          [endTimeThreshold]           |     number,string,Date      |           new Date().getTime() + 1 * 12  * 3600 * 1000            |         Right time threshold          |
-|           [videoCells]           |     VideoCellType[]     |              VideoCellType[]              | Video block (shown in different colors) |
-|           [borderColor]           |     string     |              "#fff"              | color of canvas border |
-|           [bgColor]           |     string     |              "#fff"              | color of canvas backgraound |
-|           [bottomLineColor]           |     string     |              "rgba(0,0,0,1)"              | color of the bottomLine |
-|           [verticalBarColor]           |     string     |              "rgba(0,0,0,1)"              | color of the verticalBar |
-|           [playBarColor]           |     string     |              "#448aff"              |  color of the playBar |
-|          (playClick)           |      any       | playTime(Current timestamp) |       PlayTime starts playing at speed      |
-|          (mouseUp)           |      any       | returnTime(Current timestamp) |       Returns the current time when the mouse is released       |
-|          (mouseDown)           |      any       | returnTime(Current timestamp) |       Returns the current time when the mouse is pressed       |
+|               Name               |      Type      |                           Default/Return                           |                        Description                        |
+| :------------------------------: | :------------: |:------------------------------------------------------------------:|:---------------------------------------------------------:|
+|           [canvasHeight]           |      number       |                                 50                                 |                Высота полотна (не ниже 50)                |
+|            [playTime]             | number,string,Date |                        new Date().getTime()                        |                   Время воспроизведения                   |
+|           [speed]            |    number     |                                 1                                  |              Скорость воспроизведения видео               |
+|        [startTimeThreshold]         |    number,string,Date     |            new Date().getTime() - 1 * 12  * 3600 * 1000            |                    Левый порог времени                    |
+|          [endTimeThreshold]           |     number,string,Date      |            new Date().getTime() + 1 * 12  * 3600 * 1000            |                   Правый порог времени                    |
+|           [videoCells]           |     VideoCellType[]     |                          VideoCellType[]                           |       Блоки видео (окрашиваются в различные цвета)        |
+|           [borderColor]           |     string     |                               "#fff"                               |                    Цвет рамки полотна                     |
+|           [bgColor]           |     string     |                               "#fff"                               |                     Цвет фона полотна                     |
+|           [bottomLineColor]           |     string     |                          "rgba(0,0,0,1)"                           |                     Цвет нижней линии                     |
+|           [verticalBarColor]           |     string     |                          "rgba(0,0,0,1)"                           |                  Цвет вертикальных линий                  |
+|           [playBarColor]           |     string     |                             "#448aff"                              |                       Цвет бегунка                        |
+|          (mouseUp)           |      any       |                   returnTime(Current timestamp)                    | Возвращает текущее время при отпускании левой кнопки мыши |
+|          (mouseDown)           |      any       |                   returnTime(Current timestamp)                    |  Возвращает текущее время при зажатой левой кнопки мыши   |
 
 ## Interfate VideoCellType
 
