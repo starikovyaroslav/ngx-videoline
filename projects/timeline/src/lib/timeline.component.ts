@@ -15,7 +15,7 @@ import {DateUtil} from './dateUtils';
 import {CanvasPos, VideoCellType} from './timeline.model';
 
 @Component({
-  selector: 'app-timeline',
+  selector: 'ngx-timeliner',
   templateUrl: './timeline.component.html',
   styleUrls: ['timeline.component.scss']
 })
