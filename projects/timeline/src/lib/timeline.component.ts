@@ -15,7 +15,7 @@ import {DateUtil} from './dateUtils';
 import {CanvasPos, VideoCellType} from './timeline.model';
 
 @Component({
-  selector: 'ngx-timeliner',
+  selector: 'app-timeline',
   templateUrl: './timeline.component.html',
   styleUrls: ['timeline.component.scss']
 })
@@ -252,7 +252,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.timecell = timecell;
     this.startTimestamp = startTimestamp;
     this.notRecordArea = {
-      beginTime: this.startTimestamp,
+      startTime: this.startTimestamp,
       endTime: new Date().getTime() <= this.endTimeThreshold ? timecell[timecell.length - 1].endTime : this.endTimestamp,
       style: {
         background: this.notRecordColor,
@@ -347,9 +347,9 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
   }
 
   private draw_cell(cell: VideoCellType): void {
-    const pxPerMs = this.canvasW / (this.hoursPerRuler * 60 * 60 * 1000); // px/ms
-    const beginX = (cell.beginTime - this.startTimestamp) * pxPerMs;
-    const cellWidth = (cell.endTime - cell.beginTime) * pxPerMs;
+    const pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour); // px/ms
+    const beginX = (cell.startTime - this.startTimestamp) * pxPerMs;
+    const cellWidth = (cell.endTime - cell.startTime) * pxPerMs;
     this.ctx.fillStyle = cell.style.background;
     this.ctx.fillRect(beginX, 0, cellWidth, (this.scale));
   }
@@ -407,7 +407,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
   }
 
   private checkAllowedTime(time: number): void {
-    const allowedTime = !!this.timecell.find((cell) => (time <= cell.endTime && time >= cell.beginTime));
+    const allowedTime = !!this.timecell.find((cell) => (time <= cell.endTime && time >= cell.startTime));
 
     if (!allowedTime) {
       this.checkForTimeHole(time);
@@ -430,17 +430,18 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       graduationTime = Number(startTimestamp) + Number(msOffset) + i * Number(msPerStep);
       const date = new Date(graduationTime);
 
+      const formattedDate = DateUtil.formatDate(date, 'HH:mm:ss');
+
       if (date.getUTCHours() === 0 && date.getUTCMinutes() === 0) {
         lineH = (this.scale * 1.75);
-        const bigDate = DateUtil.formatDate(date, 'HH:mm:ss');
-        this.addGraduationText(bigDate, graduationLeft);
+        this.addGraduationText(formattedDate, graduationLeft);
       } else if ((graduationTime / (60 * 1000)) % mediumStep === 0) {
         lineH = (this.scale * 1.25);
-        const middleDate = DateUtil.formatDate(date, 'HH:mm:ss');
-        this.addGraduationText(middleDate, graduationLeft);
+        this.addGraduationText(formattedDate, graduationLeft);
       } else {
         lineH = (this.scale * 0.75);
       }
+
       this.drawLine(
         graduationLeft,
         0,
@@ -461,8 +462,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.canvasH = this.canvas.height;
     this.timecell = this.videoCells;
     this.graduationStep = 20;
-    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600) < 24 ?
-      Number(((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600).toFixed(5)) :
+    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / this.millisInHour) < 24 ?
+      Number(((this.endTimeThreshold - this.startTimeThreshold) / this.millisInHour).toFixed(5)) :
       24;
     this.startTimestamp = Number(this.startTimeThreshold);
     this.distanceBetweenGtitle = 80;
@@ -471,7 +472,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     this.gIsMousemove = false;
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     this.playBarOffsetX = 0;
-    this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / 3600 / 1000 / this.hoursPerRuler;
+    this.playBarDistanceLeft = this.playBarOffsetX / this.pxPerMs / this.millisInHour / this.hoursPerRuler;
     this.currentTimestamp = this.startTimestamp + this.hoursPerRuler * this.playBarDistanceLeft * this.millisInHour;
 
     this.updatePlayBarScale();
@@ -493,12 +494,12 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       const lastCell: VideoCellType = timecell[lastIndex];
 
       if (time > lastCell.endTime) {
-        this.playTime = lastCell.beginTime;
+        this.playTime = lastCell.startTime;
         return;
       }
 
-      if (time < beginCell.beginTime) {
-        this.playTime = beginCell.beginTime;
+      if (time < beginCell.startTime) {
+        this.playTime = beginCell.startTime;
         return;
       }
 
@@ -506,14 +507,14 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
         return;
       }
       const nextCell = timecell[i + 1];
-      const isTimeHole = time > cell.endTime && time < nextCell.beginTime;
+      const isTimeHole = time > cell.endTime && time < nextCell.startTime;
 
       if (isTimeHole) {
-        const middleTimeHole = (nextCell.beginTime + cell.endTime) / 2;
+        const middleTimeHole = (nextCell.startTime + cell.endTime) / 2;
         if (time < middleTimeHole) {
-          this.playTime = cell.beginTime;
+          this.playTime = cell.startTime;
         } else {
-          this.playTime = nextCell.beginTime;
+          this.playTime = nextCell.startTime;
         }
         return;
       }
@@ -527,8 +528,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     }
 
     this.events.some(event => {
-      if (time <= event.endTime && time >= event.beginTime) {
-        this.playTime = event.beginTime;
+      if (time <= event.endTime && time >= event.startTime) {
+        this.playTime = event.startTime;
         return true;
       }
       this.playTime = time;
@@ -543,8 +544,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
 
   private updateEndTimeThreshold(endTimeThreshold: number): void {
     this.endTimeThreshold = endTimeThreshold;
-    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600) < 24 ?
-      Number(((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600).toFixed(5)) :
+    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / this.millisInHour) < 24 ?
+      Number(((this.endTimeThreshold - this.startTimeThreshold) / this.millisInHour).toFixed(5)) :
       24;
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
   }
@@ -552,8 +553,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
   private updateStartTimeThreshold(startTimeThreshold: number): void {
     this.clearCanvas();
     this.startTimeThreshold = startTimeThreshold;
-    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600) < 24 ?
-      Number(((this.endTimeThreshold - this.startTimeThreshold) / 1000 / 3600).toFixed(5)) :
+    this.hoursPerRuler = Math.ceil((this.endTimeThreshold - this.startTimeThreshold) / this.millisInHour) < 24 ?
+      Number(((this.endTimeThreshold - this.startTimeThreshold) / this.millisInHour).toFixed(5)) :
       24;
     this.startTimestamp = this.startTimeThreshold;
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);

@@ -8,7 +8,7 @@ export interface VideoCellStyleType {
 }
 
 export interface VideoCellType {
-  beginTime: number;
+  startTime: number;
   endTime: number;
   style: VideoCellStyleType;
 }
