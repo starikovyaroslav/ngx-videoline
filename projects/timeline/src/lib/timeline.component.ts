@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 
 import {DateUtil} from './dateUtils';
-import {CanvasPos, VideoCellType} from './interface';
+import {CanvasPos, VideoCellType} from './timeline.model';
 
 @Component({
   selector: 'ngx-timeliner',

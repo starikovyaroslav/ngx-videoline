@@ -1,6 +1,6 @@
 {
   "name": "ngx-timeliner",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "npm run build_lib && ng serve",
@@ -23,7 +23,6 @@
     "@angular/platform-browser": "^14.3.0",
     "@angular/platform-browser-dynamic": "^14.3.0",
     "@angular/router": "^14.3.0",
-    "ngx-video-timeline": "^0.10.14",
     "rxjs": "~6.5.4",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.4"

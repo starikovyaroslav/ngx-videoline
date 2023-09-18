@@ -5616,13 +5616,6 @@ ng-packagr@^14.2.2:
   optionalDependencies:
     esbuild "^0.15.0"
 
-ngx-video-timeline@^0.10.14:
-  version "0.10.14"
-  resolved "https://registry.npmjs.org/ngx-video-timeline/-/ngx-video-timeline-0.10.14.tgz#12586e3af328168ca7e5ed7ab7da89e17321d02e"
-  integrity sha512-5gMfwNTn+x9KFpm5rrCLapzv50onNTcfDpT+mBWJtafdfeOLG1PYQwgKEkbj+Y68edbbki30C6ioHtI3lyqvzw==
-  dependencies:
-    tslib "^2.0.0"
-
 nice-napi@^1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/nice-napi/-/nice-napi-1.0.2.tgz#dc0ab5a1eac20ce548802fc5686eaa6bc654927b"
