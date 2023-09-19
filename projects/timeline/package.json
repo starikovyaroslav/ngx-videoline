@@ -1,5 +1,5 @@
 {
-  "name": "ngx-timeliner",
+  "name": "@eltex/ngx-timeliner",
   "version": "1.0.0",
   "peerDependencies": {
     "@angular/common": "^14.3.0",
