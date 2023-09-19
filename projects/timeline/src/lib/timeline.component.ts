@@ -43,7 +43,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
   readonly millisInHour = 3600 * 1000;
 
   scale: number = this.canvasHeight / 4.55;
-  canvas: any;
+  canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   canvasW: number;
   canvasH: number;
@@ -98,8 +98,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
 
   @HostListener('window:resize', [])
   onResize(): void {
-    this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
-    this.canvasW = this.canvas.parentNode.offsetWidth;
+    this.canvas.width = Math.round(this.canvas.offsetWidth - 2);
+    this.canvasW = this.canvas.offsetWidth;
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
     this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
     this.init(this.startTimestamp, this.timecell);
@@ -455,8 +455,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
 
   private prepareCanvas(): void {
     this.canvas = this.canvasExp.nativeElement;
-    this.ctx = this.canvas.getContext('2d');
-    this.canvas.width = Math.round(this.canvas.parentNode.offsetWidth - 2);
+    this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    this.canvas.width = Math.round(this.canvas.offsetWidth - 2);
     this.canvasW = this.canvas.width;
     this.canvas.height = this.canvasHeight;
     this.canvasH = this.canvas.height;
