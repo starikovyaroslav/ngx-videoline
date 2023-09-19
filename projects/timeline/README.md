@@ -3,7 +3,7 @@
 ## Описание
 Библиотека таймлайна для видеоплеера
 
-![samplePic](src/assets/timeline.png)
+![samplePic](../../src/assets/timeline.png)
 
 ## Установка
 

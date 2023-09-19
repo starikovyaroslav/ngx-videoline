@@ -126,9 +126,8 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       }
       this.hoursPerRuler = this.zoom;
     }
-    const middleTime = this.startTimestamp + ((this.canvasW / 2) / this.pxPerMs);
     this.pxPerMs = this.canvasW / (this.hoursPerRuler * this.millisInHour);
-    this.startTimestamp = middleTime - ((this.canvasW / 2) / this.pxPerMs);
+    this.startTimestamp = this.currentTimestamp - ((this.canvasW / 2) / this.pxPerMs);
     this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
     this.init(this.startTimestamp, this.timecell);
     this.drawPlayBar();
@@ -173,6 +172,7 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
       this.gIsMousedown = false;
 
       if (!this.isBarDown) {
+        this.setTime(this.playTime as number);
         return;
       }
 
@@ -368,6 +368,10 @@ export class NgxTimelinerComponent implements OnInit, OnChanges {
     if (this.ctx) {
       this.clearCanvas();
       this.currentTimestamp = time;
+      this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
+      if ((this.currentTimestamp < this.startTimestamp || this.currentTimestamp > this.endTimestamp) && !this.gIsMousemove) {
+        this.startTimestamp = this.currentTimestamp - ((this.canvasW / 2) / this.pxPerMs);
+      }
       this.playBarOffsetX = Math.round((this.currentTimestamp - this.startTimestamp) * this.pxPerMs);
       this.init(this.startTimestamp, this.timecell);
       this.drawPlayBar();
