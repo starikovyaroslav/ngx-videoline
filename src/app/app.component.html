@@ -1,0 +1,10 @@
+<div class="canvas-box">
+  <ngx-timeliner [canvasHeight]="canvasHeight"
+                 [playTime]="playTime"
+                 [events]="events"
+                 [speed]="speed"
+                 [startTimeThreshold]="videoCells[0].startTime"
+                 [endTimeThreshold]="videoCells[videoCells.length - 1].startTime"
+                 [videoCells]="videoCells"
+                 class="canvas-class"></ngx-timeliner>
+</div>
